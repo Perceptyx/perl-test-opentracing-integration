@@ -1,0 +1,50 @@
+=pod
+
+=head1 NAME
+
+OpenTracing::Implementation::Test - in-memory OpenTracing implementation for testing
+
+=head1 SYNOPSIS
+
+  use OpenTracing::Implementation::Test;
+  use Data::Dumper;
+
+  my $tracer = OpenTracing::Implementation::Test->bootstrap_tracer();
+  my $scope = $tracer->start_active_span('foo');
+  ...
+  print Dumper $tracer->get_spans_as_struct();
+  print $tracer->span_tree();
+
+
+=head1 DESCRIPTION
+
+This is a simple in-memory implementation useful for checking your
+instrumentation. Instead of sending the data off to another service,
+the tracer itself keeps track of spans and allows for easy inspection.
+
+=head1 PROVIDED MODULES
+
+All of these consume the appropriate L<OpenTracing::Role>:
+
+=head2 L<OpenTracing::Implementation::Test::Tracer>
+
+=head2 L<OpenTracing::Implementation::Test::Span>
+
+=head2 L<OpenTracing::Implementation::Test::SpanContext>
+
+=head2 L<OpenTracing::Implementation::Test::Scope>
+
+=head2 L<OpenTracing::Implementation::Test::ScopeManager>
+
+=head1 EXTRA METHODS
+
+=head2 Tracer methods
+
+The tracer provides a few extra methods on top of the role,
+see L<OpenTracing::Implementation::Test::Tracer> for details.
+
+=head2 SpanContext->level()
+
+Returns the depth of the span (number of parent spans) in the hierarchy.
+
+=cut
