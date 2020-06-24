@@ -1,4 +1,7 @@
 package OpenTracing::Implementation::Test::SpanContext;
+
+our $VERSION = 'v0.1.0';
+
 use Moo;
 use Types::Standard qw/Int/;
 use Bytes::Random::Secure qw/random_bytes_hex/;

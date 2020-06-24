@@ -1,4 +1,7 @@
 package Test::OpenTracing::Integration;
+
+our $VERSION = 'v0.1.0';
+
 use strict;
 use warnings;
 use parent 'Exporter';
