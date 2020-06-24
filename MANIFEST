@@ -7,6 +7,7 @@ lib/OpenTracing/Implementation/Test/Span.pm
 lib/OpenTracing/Implementation/Test/SpanContext.pm
 lib/OpenTracing/Implementation/Test/Tracer.pm
 lib/Test/OpenTracing/Integration.pm
+lib/Test/OpenTracing/Integration.pod
 LICENSE.md
 Makefile.PL
 MANIFEST

@@ -146,12 +146,20 @@ sub cmp_easy {
 }
 
 1;
+
 __END__
+
 =pod
+
+
+
+
 
 =head1 NAME
 
-OpenTracing::Implementation::Test::Tracer - in-memory tracer implementation
+OpenTracing::Implementation::Test::Tracer - OpenTracing Test for Tracer
+
+
 
 =head1 DESCRIPTION
 
@@ -159,27 +167,26 @@ This tracer keeps track of created spans by itself, using an internal structure.
 It can be used with L<Test::Builder> tests to check the correctness of OpenTracing
 utilites or to easily inspect your instrumentation.
 
-=head1 METHODS
 
-=head2 get_spans_as_struct()
 
-Returns a list of hashes representing all spans, including
-information from SpanContexts. Example structure:
+=head1 INSTANCE METHODS
+
+=head2 C<get_spans_as_struct>
+
+Returns a list of hashes representing all spans, including information from
+SpanContexts. Example structure:
 
   (
     {
       operation_name => 'begin',
       span_id        => '7a7da907b9ce62',
       trace_id       => 'cacbd7a84f960c',
-
       level          => 0,
       parent_id      => undef,
-
       has_finished   => '',
       start_time     => 1592863360,
       finish_time    => undef,
       duration       => undef,
-
       baggage_items  => {},
       tags           => { a => 1 },
     },
@@ -187,39 +194,71 @@ information from SpanContexts. Example structure:
       operation_name => 'sub',
       span_id        => 'e0be9cce2d0d3d',
       trace_id       => 'cacbd7a84f960c'
-
       level          => 1,
       parent_id      => '7a7da907b9ce62',
-
       has_finished   => 1,
       start_time     => 1592863360,
       finish_time    => 1592863360.81196,
       duration       => 0.811956882476807,
-
       baggage_items  => {},
       tags           => { a => 2 },
     };
   )
 
-=head2 span_tree()
+
+
+=head2 C<span_tree>
 
 Return a string representation of span relationships.
 
-=head2 cmp_deeply($expected, $test_name)
 
-This is a L<Test::Builder>-enabled test method, will emit a single test with $test_name.
-The test will compare current saved spans (same as returned by L<get_spans_as_struct>)
-with $expected using C<cmp_deeply> from L<Test::Deep>.
 
-=head2 cmp_easy($expected, $test_name)
+=head2 C<cmp_deeply>
 
-Same as L<cmp_deeply> but transforms $expected into a superbag of superhashes
-before the comparison, so that not all keys need to be specified and order
-doesn't matter.
+    $tracer->cmp_deeply $all_expected, $test_message;
 
-=head2 clear_spans()
+This L<Test::Builder>-enabled test method, will emit a single test with
+C<$test_message>. The test will compare current saved spans (same as returned by
+L<get_spans_as_struct>) with C<$all_expected> using C<cmp_deeply> from
+L<Test::Deep>.
 
-Removes all saved spans from the tracer,
-useful for starting fresh before new test cases.
+
+
+=head2 C<cmp_easy>
+
+    $tracer->cmp_easy $any_expected, $test_message;
+
+Same as L<cmp_deeply> but transforms C<$any_expected> into a I<super bag> of
+I<super hashes> before the comparison, so that not all keys need to be specified
+and order doesn't matter.
+
+
+
+=head2 C<clear_spans>
+
+Removes all saved spans from the tracer, useful for starting fresh before new
+test cases.
+
+
+
+=head1 AUTHOR
+
+Szymon Nieznanski <snieznanski@perceptyx.com>
+
+
+
+=head1 COPYRIGHT AND LICENSE
+
+'Test::OpenTracing::Integration'
+is Copyright (C) 2019 .. 2020, Perceptyx Inc
+
+This library is free software; you can redistribute it and/or modify it under
+the terms of the Artistic License 2.0.
+
+This package is distributed in the hope that it will be useful, but it is
+provided "as is" and without any express or implied warranties.
+
+For details, see the full text of the license in the file LICENSE.
+
 
 =cut
