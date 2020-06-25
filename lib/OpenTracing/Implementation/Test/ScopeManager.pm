@@ -1,6 +1,6 @@
 package OpenTracing::Implementation::Test::ScopeManager;
 
-our $VERSION = 'v0.100.1';
+our $VERSION = 'v0.101.0';
 
 use Moo;
 use OpenTracing::Implementation::Test::Scope;
