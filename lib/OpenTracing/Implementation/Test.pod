@@ -80,7 +80,7 @@ The test will compare current saved spans using C<cmp_deeply>.
 =item L<< C<cmp_easy> |
 OpenTracing::Implementation::Test::Tracer/"cmp_easy" >>
 
-Make testiung more easy.
+Make testing more easy.
 
 =item L<< C<clear_spans> |
 OpenTracing::Implementation::Test::Tracer/"clear_spans" >>
@@ -97,6 +97,11 @@ Removes all saved spans from the tracer.
 OpenTracing::Implementation::Test::SpanContext/"level" >>
 
 Returns the depth of the span.
+
+=item L<< C<context_item> |
+OpenTracing::Implementation::Test::SpanContext/"context_item" >>
+
+Returns the value of a non-functional test attribute.
 
 =back
 
