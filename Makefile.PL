@@ -1,7 +1,7 @@
 use ExtUtils::MakeMaker::CPANfile;
 
 WriteMakefile(
-    'NAME'          => 'Test::OpenTracing',
+    'NAME'          => 'Test::OpenTracing::Integration',
     'VERSION_FROM'  => 'lib/Test/OpenTracing/Integration.pm',
     'LICENSE'       => 'perl',
     test            => {
