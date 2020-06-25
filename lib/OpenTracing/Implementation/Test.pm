@@ -1,6 +1,6 @@
 package OpenTracing::Implementation::Test;
 
-our $VERSION = 'v0.101.0';
+our $VERSION = 'v0.101.1';
 
 use Moo;
 use aliased 'OpenTracing::Implementation::Test::Tracer';

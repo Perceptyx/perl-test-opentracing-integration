@@ -1,6 +1,6 @@
 package OpenTracing::Implementation::Test::SpanContext;
 
-our $VERSION = 'v0.101.0';
+our $VERSION = 'v0.101.1';
 
 use Moo;
 use Types::Standard qw/Int/;
