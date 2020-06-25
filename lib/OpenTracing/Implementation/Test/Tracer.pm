@@ -73,28 +73,28 @@ sub _tree_node {
 sub to_struct {
     my ($class, $span) = @_;
     my $context = $span->get_context();
-
+    
     my $data = {
-        trace_id      => $context->trace_id,
-        span_id       => $context->span_id,
-        level         => $context->level,
-        baggage_items => { $context->get_baggage_items },
-
-        operation_name => $span->get_operation_name,
-        has_finished   => !!$span->has_finished(),
-        start_time     => $span->start_time(),
-        tags           => { $span->get_tags },
-        parent_id      => scalar $span->get_parent_span_id(),
-
+        baggage_items       => { $context->get_baggage_items },
+        context_item        => $context->context_item,
+        has_finished        => !!$span->has_finished(),
+        level               => $context->level,
+        operation_name      => $span->get_operation_name,
+        parent_id           => scalar $span->get_parent_span_id(),
+        span_id             => $context->span_id,
+        start_time          => $span->start_time(),
+        tags                => { $span->get_tags },
+        trace_id            => $context->trace_id,
+        
         $span->has_finished() ? (  # these die on unfinished spans
-            duration    => $span->duration(),
-            finish_time => $span->finish_time(),
+            duration        => $span->duration(),
+            finish_time     => $span->finish_time(),
         ) : (
-            duration    => undef,
-            finish_time => undef,
+            duration        => undef,
+            finish_time     => undef,
         ),
     };
-
+    
     return $data
 }
 
