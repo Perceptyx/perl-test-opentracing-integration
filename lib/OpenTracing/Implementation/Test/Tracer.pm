@@ -179,12 +179,12 @@ SpanContexts. Example structure:
   (
     {
       operation_name => 'begin',
-      span_id        => '7a7da907b9ce62',
-      trace_id       => 'cacbd7a84f960c',
+      span_id        => '7a7da90',
+      trace_id       => 'cacbd7a',
       level          => 0,
       parent_id      => undef,
       has_finished   => '',
-      start_time     => 1592863360,
+      start_time     => 1592863360.000000,
       finish_time    => undef,
       duration       => undef,
       baggage_items  => {},
@@ -192,13 +192,13 @@ SpanContexts. Example structure:
     },
     {
       operation_name => 'sub',
-      span_id        => 'e0be9cce2d0d3d',
-      trace_id       => 'cacbd7a84f960c'
+      span_id        => 'e0be9cc',
+      trace_id       => 'cacbd7a'
       level          => 1,
-      parent_id      => '7a7da907b9ce62',
+      parent_id      => '7a7da90',
       has_finished   => 1,
-      start_time     => 1592863360,
-      finish_time    => 1592863360.81196,
+      start_time     => 1592863360.000000,
+      finish_time    => 1592863360.811969,
       duration       => 0.811956882476807,
       baggage_items  => {},
       tags           => { a => 2 },

@@ -4,16 +4,16 @@ our $VERSION = 'v0.1.0';
 
 use Moo;
 use Types::Standard qw/Int/;
-use Bytes::Random::Secure qw/random_bytes_hex/;
+use Bytes::Random::Secure qw/random_string_from/;
 
 with 'OpenTracing::Role::SpanContext';
 
 has '+span_id' => (
-    default => sub { random_bytes_hex(7) },
+    default => \&_random_id,
 );
 
 has '+trace_id' => (
-    default => sub { random_bytes_hex(7) },
+    default => \&_random_id,
 );
 
 has level => (
@@ -24,7 +24,11 @@ has level => (
 
 sub with_level { $_[0]->clone_with( level => $_[1] ) }
 
-sub with_next_level { $_[0]->with_level($_[0]->level + 1) }
+sub with_next_level { $_[0]->with_level($_[0]->level +1) }
+
+sub _random_id {
+    random_string_from '0123456789abcdef', 7
+}
 
 1;
 
