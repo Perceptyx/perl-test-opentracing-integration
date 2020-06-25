@@ -5,4 +5,11 @@ CHANGE LOG
 2020-06-25 - v0.100.0
 ---------------------
 
+### Fixed
+    - cpanfile dependencies
+
+
+2020-06-25 - v0.100.0
+---------------------
+
 Initial Release
