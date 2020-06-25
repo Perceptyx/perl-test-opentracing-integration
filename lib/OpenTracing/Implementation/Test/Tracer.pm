@@ -16,6 +16,7 @@ use PerlX::Maybe qw/maybe/;
 use Test::Builder;
 use Test::Deep qw/superbagof superhashof cmp_details deep_diag/;
 use Tree;
+use Types::Standard qw/Str/;
 
 use namespace::clean;
 
@@ -29,6 +30,11 @@ has spans => (
     default => sub { [] },
     lazy    => 1,
     clearer => 1,
+);
+
+has default_context_item => (
+    is      => 'ro',
+    isa     => Str,
 );
 
 sub register_span {
@@ -123,7 +129,13 @@ sub build_span {
 
 sub build_context {
     my ($self, %opts) = @_;
-    return SpanContext->new(%opts);
+    my $context_item = delete $opts{ context_item }
+    || $self->default_context_item;
+
+    return SpanContext->new(
+        %opts,
+        context_item => $context_item,
+    );
 }
 
 sub cmp_deeply {
