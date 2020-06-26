@@ -11,6 +11,7 @@ requires 'OpenTracing::Implementation::NoOp';
 
 on 'test' => sub {
     requires 'Test::OpenTracing::Interface', 'v0.23.0';
+    requires 'Test::Time::HiRes';
 };
 
 on 'develop' => sub {
