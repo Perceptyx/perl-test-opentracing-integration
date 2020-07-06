@@ -11,7 +11,7 @@ use aliased 'OpenTracing::Implementation::Test::ScopeManager';
 use aliased 'OpenTracing::Implementation::Test::Span';
 use aliased 'OpenTracing::Implementation::Test::SpanContext';
 
-use Carp;
+use Carp qw/croak/;
 use PerlX::Maybe qw/maybe/;
 use Test::Builder;
 use Test::Deep qw/superbagof superhashof cmp_details deep_diag/;
@@ -19,6 +19,11 @@ use Tree;
 use Types::Standard qw/Str/;
 
 use namespace::clean;
+
+use constant {
+    PREFIX_BAGGAGE => 'baggage.',
+    PREFIX_CONTEXT => 'context.',
+};
 
 has '+scope_manager' => (
     required => 0,
@@ -104,9 +109,58 @@ sub to_struct {
     return $data
 }
 
-sub extract_context { return }
+sub inject_context {
+    my ($self, $carrier, $context) = @_;
+    $context //= $self->get_active_span->get_context();
+    croak 'No context available'            if not $context;
+    croak 'Carrier is not a hash reference' if ref $carrier ne 'HASH';
 
-sub inject_context { return }
+    my %baggage = $context->get_baggage_items();
+    my %context_data = (
+        span_id      => $context->span_id,
+        trace_id     => $context->trace_id,
+        level        => $context->level,
+        context_item => $context->context_item,
+    );
+    while (my ($baggage_key, $baggage_val) = each %baggage) {
+        $carrier->{ PREFIX_BAGGAGE . $baggage_key } = $baggage_val;
+    }
+    while (my ($context_key, $context_val) = each %context_data) {
+        $carrier->{ PREFIX_CONTEXT . $context_key } = $context_val;
+    }
+    return $carrier;
+}
+
+sub extract_context {
+    my ($self, $carrier) = @_;
+    croak 'Carrier is not a hash reference' if ref $carrier ne 'HASH';
+
+    my (%baggage, %context);
+    while (my ($key, $val) = each %$carrier) {
+        next unless defined $val;
+
+        if ($key =~ s/${\PREFIX_CONTEXT}//) {
+            $context{$key} = $val;
+            next;
+        }
+        if ($key =~ s/${\PREFIX_BAGGAGE}//) {
+            $baggage{$key} = $val;
+            next;
+        }
+        croak 'Unrecognized key: ', $key;
+    }
+
+    # These cannot be specified in SpanContext constructor
+    my $trace_id = delete $context{trace_id};
+    my $span_id  = delete $context{span_id};
+
+    my $context = $self->build_context(%context);
+    $context = $context->with_trace_id($trace_id)     if $trace_id;
+    $context = $context->with_span_id($span_id)       if $span_id;
+    $context = $context->with_baggage_items(%baggage) if %baggage;
+
+    return $context;
+}
 
 sub build_span {
     my ($self, %opts) = @_;
