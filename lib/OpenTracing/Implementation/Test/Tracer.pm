@@ -13,6 +13,7 @@ use aliased 'OpenTracing::Implementation::Test::SpanContext';
 
 use Carp qw/croak/;
 use PerlX::Maybe qw/maybe/;
+use Scalar::Util qw/blessed/;
 use Test::Builder;
 use Test::Deep qw/superbagof superhashof cmp_details deep_diag/;
 use Tree;
@@ -109,31 +110,68 @@ sub to_struct {
     return $data
 }
 
-sub inject_context {
-    my ($self, $carrier, $context) = @_;
-    $context //= $self->get_active_span->get_context();
-    croak 'No context available'            if not $context;
-    croak 'Carrier is not a hash reference' if ref $carrier ne 'HASH';
+sub _get_active_context {
+    my ($self) = @_;
+    my $active_span = $self->get_active_span() or return;
+    return $active_span->get_context();
+}
 
-    my %baggage = $context->get_baggage_items();
-    my %context_data = (
-        span_id      => $context->span_id,
-        trace_id     => $context->trace_id,
-        level        => $context->level,
-        context_item => $context->context_item,
+{
+    my @CARRIER_FORMATS = (
+        [
+            sub { ref $_[0] eq 'HASH' },
+            \&inject_context_into_hash_reference,
+            \&extract_context_from_hash_reference
+        ],
+        [   
+            sub { ref $_[0] eq 'ARRAY' },
+            \&inject_context_into_array_reference,
+            \&extract_context_from_array_reference,
+        ],
+        [  
+            sub { blessed $_[0] && $_[0]->isa('HTTP::Headers') },
+            \&inject_context_into_http_headers,
+            \&extract_context_from_http_headers,
+        ],
     );
-    while (my ($baggage_key, $baggage_val) = each %baggage) {
-        $carrier->{ PREFIX_BAGGAGE . $baggage_key } = $baggage_val;
+
+    sub detect_carrier_format {
+        my ($self, $carrier) = @_;
+        foreach (@CARRIER_FORMATS) {
+            my ($predicate, $inject, $extract) = @$_;
+            return ($inject, $extract) if $predicate->($carrier);
+        }
+        return;
     }
-    while (my ($context_key, $context_val) = each %context_data) {
-        $carrier->{ PREFIX_CONTEXT . $context_key } = $context_val;
+
+    sub _get_carrier_handlers {
+        my ($self, $carrier) = @_;
+        my ($inject, $extract) = $self->detect_carrier_format($carrier)
+            or croak 'Unrecognized carrier type: ', ref $carrier;
+        return ( $inject, $extract );
     }
-    return $carrier;
+
+    sub _get_inject_method  { ( $_[0]->_get_carrier_handlers( $_[1] ) )[0] }
+    sub _get_extract_method { ( $_[0]->_get_carrier_handlers( $_[1] ) )[1] }
 }
 
 sub extract_context {
     my ($self, $carrier) = @_;
-    croak 'Carrier is not a hash reference' if ref $carrier ne 'HASH';
+    my $extract = $self->_get_extract_method($carrier);
+    return $self->$extract($carrier);
+}
+
+sub inject_context {
+    my ($self, $carrier, $context) = @_;
+    $context //= $self->_get_active_context();
+    return $carrier if not $context;
+
+    my $inject = $self->_get_inject_method($carrier);
+    return $self->$inject($carrier, $context);
+}
+
+sub extract_context_from_hash_reference {
+    my ($self, $carrier) = @_;
 
     my (%baggage, %context);
     while (my ($key, $val) = each %$carrier) {
@@ -158,9 +196,45 @@ sub extract_context {
     $context = $context->with_trace_id($trace_id)     if $trace_id;
     $context = $context->with_span_id($span_id)       if $span_id;
     $context = $context->with_baggage_items(%baggage) if %baggage;
-
+    
     return $context;
 }
+
+sub inject_context_into_hash_reference  {
+    my ($self, $carrier, $context) = @_;
+
+    my %baggage = $context->get_baggage_items();
+    my %context_data = (
+        span_id      => $context->span_id,
+        trace_id     => $context->trace_id,
+        level        => $context->level,
+        context_item => $context->context_item,
+    );
+    while (my ($baggage_key, $baggage_val) = each %baggage) {
+        $carrier->{ PREFIX_BAGGAGE . $baggage_key } = $baggage_val;
+    }
+    while (my ($context_key, $context_val) = each %context_data) {
+        $carrier->{ PREFIX_CONTEXT . $context_key } = $context_val;
+    }
+    return $carrier;
+}
+
+sub extract_context_from_array_reference {
+    my ($self, $carrier) = @_;
+    return $self->extract_context_from_hash_reference({@$carrier});
+}
+
+sub inject_context_into_array_reference {
+    my ($self, $carrier, $context) = @_;
+
+    my %hash_carrier;
+    $self->inject_context_into_hash_reference(\%hash_carrier, $context);
+    return [%hash_carrier];
+}
+
+sub extract_context_from_http_headers { ... }
+sub inject_context_into_http_headers  { ... }
+
 
 sub build_span {
     my ($self, %opts) = @_;
