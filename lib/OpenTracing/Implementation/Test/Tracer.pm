@@ -24,6 +24,7 @@ use namespace::clean;
 use constant {
     PREFIX_BAGGAGE => 'baggage.',
     PREFIX_CONTEXT => 'context.',
+    PREFIX_HTTP    => 'OpenTracing-',
 };
 
 has '+scope_manager' => (
@@ -169,11 +170,73 @@ sub inject_context_into_array_reference {
 
     my %hash_carrier;
     $self->inject_context_into_hash_reference(\%hash_carrier, $context);
-    return [%hash_carrier];
+    push @$carrier, %hash_carrier;
+
+    return $carrier;
 }
 
-sub extract_context_from_http_headers { ... }
-sub inject_context_into_http_headers  { ... }
+sub extract_context_from_http_headers {
+    my ($self, $carrier) = @_;
+
+    my $trace_id     = $carrier->header(PREFIX_HTTP . 'Trace-Id');
+    my $span_id      = $carrier->header(PREFIX_HTTP . 'Span-Id');
+    my $level        = $carrier->header(PREFIX_HTTP . 'Level');
+    my $context_item = $carrier->header(PREFIX_HTTP . 'ContextItem');
+
+    my %baggage = map { _decode_baggage_header($_) }
+        $carrier->header( PREFIX_HTTP . 'Baggage' );
+
+    my $context = $self->build_context(
+        maybe level        => $level,
+        maybe context_item => $context_item,
+    );
+    $context = $context->with_trace_id($trace_id)     if $trace_id;
+    $context = $context->with_span_id($span_id)       if $span_id;
+    $context = $context->with_baggage_items(%baggage) if %baggage;
+
+    return $context;
+}
+
+sub inject_context_into_http_headers  {
+    my ($self, $carrier, $context) = @_;
+    
+    $carrier->header(
+        PREFIX_HTTP . 'Span-Id'     => $context->span_id,
+        PREFIX_HTTP . 'Trace-Id'    => $context->trace_id,
+        PREFIX_HTTP . 'Level'       => $context->level,
+        PREFIX_HTTP . 'ContextItem' => $context->context_item,
+    );
+
+    my %baggage = $context->get_baggage_items();
+    while (my ($name, $val) = each %baggage) {
+        my $header_field = PREFIX_HTTP . 'Baggage';
+        my $header_value = _encode_baggage_header($name, $val);
+        $carrier->push_header($header_field => $header_value);
+    }
+
+    return $carrier;
+}
+
+sub _encode_baggage_header {
+    my ($name, $val) = @_;
+
+    foreach ($name, $val) {
+        s/\\/\\\\/g;
+        s/=/\\=/g;
+    }
+    return "$name=$val";
+}
+
+sub _decode_baggage_header {
+    my ($header_value) = @_;
+    
+    my ($name, $val) = split /(?: \\ \\ )* [^\\] \K = /x, $header_value, 2;
+    foreach ($name, $val) {
+        s/\\\\/\\/g;
+        s/\\=/=/g;
+    }
+    return ($name, $val);
+}
 
 
 sub build_span {
