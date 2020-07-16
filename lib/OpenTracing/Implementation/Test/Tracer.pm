@@ -110,66 +110,6 @@ sub to_struct {
     return $data
 }
 
-sub _get_active_context {
-    my ($self) = @_;
-    my $active_span = $self->get_active_span() or return;
-    return $active_span->get_context();
-}
-
-{
-    my @CARRIER_FORMATS = (
-        [
-            sub { ref $_[0] eq 'HASH' },
-            \&inject_context_into_hash_reference,
-            \&extract_context_from_hash_reference
-        ],
-        [   
-            sub { ref $_[0] eq 'ARRAY' },
-            \&inject_context_into_array_reference,
-            \&extract_context_from_array_reference,
-        ],
-        [  
-            sub { blessed $_[0] && $_[0]->isa('HTTP::Headers') },
-            \&inject_context_into_http_headers,
-            \&extract_context_from_http_headers,
-        ],
-    );
-
-    sub detect_carrier_format {
-        my ($self, $carrier) = @_;
-        foreach (@CARRIER_FORMATS) {
-            my ($predicate, $inject, $extract) = @$_;
-            return ($inject, $extract) if $predicate->($carrier);
-        }
-        return;
-    }
-
-    sub _get_carrier_handlers {
-        my ($self, $carrier) = @_;
-        my ($inject, $extract) = $self->detect_carrier_format($carrier)
-            or croak 'Unrecognized carrier type: ', ref $carrier;
-        return ( $inject, $extract );
-    }
-
-    sub _get_inject_method  { ( $_[0]->_get_carrier_handlers( $_[1] ) )[0] }
-    sub _get_extract_method { ( $_[0]->_get_carrier_handlers( $_[1] ) )[1] }
-}
-
-sub extract_context {
-    my ($self, $carrier) = @_;
-    my $extract = $self->_get_extract_method($carrier);
-    return $self->$extract($carrier);
-}
-
-sub inject_context {
-    my ($self, $carrier, $context) = @_;
-    $context //= $self->_get_active_context();
-    return $carrier if not $context;
-
-    my $inject = $self->_get_inject_method($carrier);
-    return $self->$inject($carrier, $context);
-}
-
 sub extract_context_from_hash_reference {
     my ($self, $carrier) = @_;
 
