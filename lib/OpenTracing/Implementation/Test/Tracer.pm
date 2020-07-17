@@ -126,7 +126,6 @@ sub extract_context_from_hash_reference {
             $baggage{$key} = $val;
             next;
         }
-        croak 'Unrecognized key: ', $key;
     }
 
     # These cannot be specified in SpanContext constructor
