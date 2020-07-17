@@ -28,6 +28,10 @@ sub test_carrier {
     my ($new_carrier) = @_;
     my $check_context = gen_context_checker($new_carrier);
     reset_spans();
+
+    my $empty_carrier = $new_carrier->();
+    ok !defined( $TRACER->extract_context($empty_carrier) ),
+        'undef returned when no context can be extracted';
     
     my $root_scope = $TRACER->start_active_span('root_span');
     my $root_span  = $root_scope->get_span();

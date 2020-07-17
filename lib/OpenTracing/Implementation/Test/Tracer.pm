@@ -127,17 +127,7 @@ sub extract_context_from_hash_reference {
             next;
         }
     }
-
-    # These cannot be specified in SpanContext constructor
-    my $trace_id = delete $context{trace_id};
-    my $span_id  = delete $context{span_id};
-
-    my $context = $self->build_context(%context);
-    $context = $context->with_trace_id($trace_id)     if $trace_id;
-    $context = $context->with_span_id($span_id)       if $span_id;
-    $context = $context->with_baggage_items(%baggage) if %baggage;
-    
-    return $context;
+    return $self->_maybe_build_context(%context, baggage_items => \%baggage);
 }
 
 sub inject_context_into_hash_reference  {
@@ -185,15 +175,13 @@ sub extract_context_from_http_headers {
     my %baggage = map { _decode_baggage_header($_) }
         $carrier->header( PREFIX_HTTP . 'Baggage' );
 
-    my $context = $self->build_context(
-        maybe level        => $level,
-        maybe context_item => $context_item,
+    return $self->_maybe_build_context(
+        trace_id      => $trace_id,
+        span_id       => $span_id,
+        level         => $level,
+        context_item  => $context_item,
+        baggage_items => \%baggage,
     );
-    $context = $context->with_trace_id($trace_id)     if $trace_id;
-    $context = $context->with_span_id($span_id)       if $span_id;
-    $context = $context->with_baggage_items(%baggage) if %baggage;
-
-    return $context;
 }
 
 sub inject_context_into_http_headers  {
@@ -235,6 +223,25 @@ sub _decode_baggage_header {
         s/\\=/=/g;
     }
     return ($name, $val);
+}
+
+
+sub _maybe_build_context {
+    my ($self, %args) = @_;
+    my $trace_id      = delete $args{trace_id};
+    my $span_id       = delete $args{span_id};
+    my $baggage_items = delete $args{baggage_items} // {};
+    return unless defined $trace_id and defined $span_id;
+
+    my %context_args = (
+        maybe level        => $args{level},
+        maybe context_item => $args{context_item},
+    );
+    my $context = $self->build_context(%context_args)
+                       ->with_trace_id($trace_id)
+                       ->with_span_id($span_id)
+                       ->with_baggage_items(%$baggage_items);
+    return $context;
 }
 
 
