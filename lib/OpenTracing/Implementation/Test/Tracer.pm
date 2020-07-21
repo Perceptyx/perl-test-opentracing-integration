@@ -22,9 +22,8 @@ use Types::Standard qw/Str/;
 use namespace::clean;
 
 use constant {
-    PREFIX_BAGGAGE => 'baggage.',
-    PREFIX_CONTEXT => 'context.',
-    PREFIX_HTTP    => 'OpenTracing-',
+    HASH_CARRIER_KEY => 'opentracing_context',
+    PREFIX_HTTP      => 'OpenTracing-',
 };
 
 has '+scope_manager' => (
@@ -114,38 +113,20 @@ sub to_struct {
 sub extract_context_from_hash_reference {
     my ($self, $carrier) = @_;
 
-    my (%baggage, %context);
-    while (my ($key, $val) = each %$carrier) {
-        next unless defined $val;
-
-        if ($key =~ s/${\PREFIX_CONTEXT}//) {
-            $context{$key} = $val;
-            next;
-        }
-        if ($key =~ s/${\PREFIX_BAGGAGE}//) {
-            $baggage{$key} = $val;
-            next;
-        }
-    }
-    return $self->_maybe_build_context(%context, baggage_items => \%baggage);
+    my $context = $carrier->{ (HASH_CARRIER_KEY) };
+    return $self->_maybe_build_context(%$context);
 }
 
 sub inject_context_into_hash_reference  {
     my ($self, $carrier, $context) = @_;
 
-    my %baggage = $context->get_baggage_items();
-    my %context_data = (
-        span_id      => $context->span_id,
-        trace_id     => $context->trace_id,
-        level        => $context->level,
-        context_item => $context->context_item,
-    );
-    while (my ($baggage_key, $baggage_val) = each %baggage) {
-        $carrier->{ PREFIX_BAGGAGE . $baggage_key } = $baggage_val;
-    }
-    while (my ($context_key, $context_val) = each %context_data) {
-        $carrier->{ PREFIX_CONTEXT . $context_key } = $context_val;
-    }
+    $carrier->{ (HASH_CARRIER_KEY) } = {
+        span_id       => $context->span_id,
+        trace_id      => $context->trace_id,
+        level         => $context->level,
+        context_item  => $context->context_item,
+        baggage_items => { $context->get_baggage_items() },
+    };
     return $carrier;
 }
 
