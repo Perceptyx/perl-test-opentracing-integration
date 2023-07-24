@@ -270,9 +270,8 @@ sub cmp_deeply {
 }
 
 sub cmp_easy {
-    my ($self, $exp, $test_name) = @_;
-    $exp = superbagof(map { superhashof($_) } @$exp);
-    return $self->cmp_deeply($exp, $test_name);
+    $_[1] = superbagof(map { superhashof($_) } @$_[1]);
+    goto &cmp_deeply;
 }
 
 1;

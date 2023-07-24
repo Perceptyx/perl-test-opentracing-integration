@@ -18,15 +18,20 @@ our @EXPORT = qw(
 
 sub global_tracer_cmp_easy {
     my $tracer = OpenTracing::GlobalTracer->get_global_tracer;
-    croak 'Not a test implementation' if !$tracer->can('cmp_easy');
-    return $tracer->cmp_easy(@_);
+    my $next = $tracer->can('cmp_easy')
+        or croak 'Not a test implementation';
+    unshift @_, $tracer;
+    goto $next;
 }
 
 sub global_tracer_cmp_deeply {
     my $tracer = OpenTracing::GlobalTracer->get_global_tracer;
-    croak 'Not a test implementation' if !$tracer->can('cmp_deeply');
-    return $tracer->cmp_deeply(@_);
+    my $next = $tracer->can('cmp_deeply')
+        or croak 'Not a test implementation';
+    unshift @_, $tracer;
+    goto $next;
 }
+
 
 sub reset_spans {
     my $tracer = OpenTracing::GlobalTracer->get_global_tracer;
