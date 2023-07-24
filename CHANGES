@@ -2,6 +2,20 @@ CHANGE LOG
 ==========
 
 
+2023-07-24 - v0.103.0
+---------------------
+
+### Fixed
+    - now reports failing test from the intended caller, from your test file
+
+
+2023-07-24 - v0.102.3
+---------------------
+
+### Fixed
+    - cpanfile dependencies
+
+
 2023-07-24 - v0.102.2
 ---------------------
 
