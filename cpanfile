@@ -20,7 +20,11 @@ on 'test' => sub {
     requires 'Moo';
     requires 'Test::Most';
     requires 'Test::OpenTracing::Interface', 'v0.23.0';
+    requires 'Moo';
+    requires 'Carp';
+    requires 'Test::Most';
     requires 'Test::Time::HiRes';
+    requires 'List::Util'
 };
 
 on 'develop' => sub {
