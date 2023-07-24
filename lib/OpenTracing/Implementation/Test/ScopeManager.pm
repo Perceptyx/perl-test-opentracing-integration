@@ -1,6 +1,6 @@
 package OpenTracing::Implementation::Test::ScopeManager;
 
-our $VERSION = 'v0.102.1';
+our $VERSION = 'v0.102.2';
 
 use Moo;
 use OpenTracing::Implementation::Test::Scope;
