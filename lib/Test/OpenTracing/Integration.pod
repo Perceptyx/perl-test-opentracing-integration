@@ -62,6 +62,14 @@ See: L<OpenTracing::Implementation::Test::Tracder/"cmp_easy">
 
 
 
+=head2 C<global_tracer_cmp_spans>
+
+Runs a L<cmp_spans> on the current global tracer.
+
+See: L<OpenTracing::Implementation::Test::Tracder/"cmp_spans">
+
+
+
 =head2 C<reset_spans>
 
 Removes all saved spans from the current global tracer. Useful to start fresh
