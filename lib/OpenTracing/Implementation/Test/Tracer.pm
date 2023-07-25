@@ -275,6 +275,12 @@ sub cmp_easy {
     goto &cmp_deeply;
 }
 
+sub cmp_spans {
+    my $exp = $_[1];
+    $_[1] = [ map { superhashof($_) } @$exp ];
+    goto &cmp_deeply;
+}
+
 1;
 
 __END__
