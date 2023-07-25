@@ -33,6 +33,15 @@ sub global_tracer_cmp_deeply {
 }
 
 
+sub global_tracer_cmp_spans {
+    my $tracer = OpenTracing::GlobalTracer->get_global_tracer;
+    my $next = $tracer->can('cmp_spans')
+        or croak 'Not a test implementation';
+    unshift @_, $tracer;
+    goto $next;
+}
+
+
 sub reset_spans {
     my $tracer = OpenTracing::GlobalTracer->get_global_tracer;
     croak 'Not a test implementation' if !$tracer->can('clear_spans');
