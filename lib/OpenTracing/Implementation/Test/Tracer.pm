@@ -370,6 +370,16 @@ and order doesn't matter.
 
 
 
+=head2 C<cmp_spans>
+
+    $tracer->cmp_spans $all_expected, $test_message;
+
+Same as L<cmp_deeply> but transforms C<$all_expected> into a array reference of
+I<super hashes> before the comparison, so that all spans are to be expected in
+the given order, but not not all keys need to be specified.
+
+
+
 =head2 C<clear_spans>
 
 Removes all saved spans from the tracer, useful for starting fresh before new

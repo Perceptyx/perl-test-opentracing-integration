@@ -50,7 +50,7 @@ of L<OpenTracing::Implementation::Test::Tracer>. All are exported by default.
 
 Runs a L<cmp_deeply> on the current global tracer.
 
-See: L<OpenTracing::Implementation::Test::Tracder/"cmp_deeply">
+See: L<OpenTracing::Implementation::Test::Tracer/"cmp_deeply">
 
 
 
@@ -58,7 +58,7 @@ See: L<OpenTracing::Implementation::Test::Tracder/"cmp_deeply">
 
 Runs a L<cmp_easy> on the current global tracer.
 
-See: L<OpenTracing::Implementation::Test::Tracder/"cmp_easy">
+See: L<OpenTracing::Implementation::Test::Tracer/"cmp_easy">
 
 
 
@@ -66,7 +66,7 @@ See: L<OpenTracing::Implementation::Test::Tracder/"cmp_easy">
 
 Runs a L<cmp_spans> on the current global tracer.
 
-See: L<OpenTracing::Implementation::Test::Tracder/"cmp_spans">
+See: L<OpenTracing::Implementation::Test::Tracer/"cmp_spans">
 
 
 

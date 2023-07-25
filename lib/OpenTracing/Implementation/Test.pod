@@ -98,6 +98,8 @@ Removes all saved spans from the tracer.
 
 =head2 SpanContext
 
+=over
+
 =item L<< C<level> |
 OpenTracing::Implementation::Test::SpanContext/"level" >>
 
